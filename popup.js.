@@ -1,0 +1,21 @@
+const startButton = document.getElementById("start");
+
+startButton.addEventListener("click", async () => {
+  startButton.textContent = "Подключение...";
+
+  try {
+    const tabs = await chrome.tabs.query({
+      active: true,
+      currentWindow: true
+    });
+
+    const response = await chrome.tabs.sendMessage(
+      tabs[0].id,
+      { action: "ANALYZE_PAGE" }
+    );
+
+    startButton.textContent = "Анализ завершён";
+  } catch (error) {
+    startButton.textContent = "Открой страницу заново";
+  }
+});

@@ -1,57 +1,25 @@
-// TestPilot AI — Content Analyzer
+// TestPilot AI — Page Analyzer
 
 (() => {
   if (window.testPilotLoaded) return;
   window.testPilotLoaded = true;
 
-  const panel = document.createElement("div");
+  chrome.runtime.onMessage.addListener(
+    (message, sender, sendResponse) => {
 
-  panel.id = "testpilot-panel";
+      if (message.action === "ANALYZE_PAGE") {
 
-  panel.innerHTML = `
-    <div id="tp-header">
-      <span>✦ TestPilot AI</span>
-      <button id="tp-close">×</button>
-    </div>
+        const pageText = document.body.innerText
+          .replace(/\s+/g, " ")
+          .slice(0, 15000);
 
-    <div id="tp-content">
-      <div class="tp-status">AI готов к работе</div>
-      <button id="tp-analyze">Анализировать страницу</button>
-      <div id="tp-result"></div>
-    </div>
-  `;
-
-  Object.assign(panel.style, {
-    position: "fixed",
-    bottom: "20px",
-    right: "15px",
-    width: "270px",
-    background: "#17191f",
-    color: "#fff",
-    padding: "14px",
-    borderRadius: "16px",
-    zIndex: "999999",
-    fontFamily: "Arial, sans-serif",
-    boxShadow: "0 4px 20px #0005"
-  });
-
-  document.body.appendChild(panel);
-
-  const result = panel.querySelector("#tp-result");
-
-  panel.querySelector("#tp-close").onclick = () => {
-    panel.remove();
-  };
-
-  panel.querySelector("#tp-analyze").onclick = () => {
-    const text = document.body.innerText
-      .replace(/\s+/g, " ")
-      .slice(0, 12000);
-
-    result.innerHTML = `
-      <p>Страница проанализирована.</p>
-      <p>Получено символов: ${text.length}</p>
-      <p>Ожидается подключение AI.</p>
-    `;
-  };
+        sendResponse({
+          success: true,
+          title: document.title,
+          url: location.href,
+          text: pageText
+        });
+      }
+    }
+  );
 })();

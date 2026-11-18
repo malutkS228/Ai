@@ -1,21 +1,37 @@
 const startButton = document.getElementById("start");
+const result = document.getElementById("result");
 
 startButton.addEventListener("click", async () => {
-  startButton.textContent = "Подключение...";
+  startButton.textContent = "Анализирую...";
+  result.textContent = "Получаю данные страницы...";
 
   try {
-    const tabs = await chrome.tabs.query({
+    const [tab] = await chrome.tabs.query({
       active: true,
       currentWindow: true
     });
 
-    const response = await chrome.tabs.sendMessage(
-      tabs[0].id,
-      { action: "ANALYZE_PAGE" }
-    );
+    const data = await chrome.tabs.sendMessage(tab.id, {
+      action: "ANALYZE_PAGE"
+    });
+
+    if (!data || !data.success) {
+      throw new Error("Не удалось получить данные");
+    }
+
+    result.textContent =
+      "Страница: " + data.title +
+      "\n\nАдрес: " + data.url +
+      "\n\nПолучено символов: " + data.text.length +
+      "\n\nДанные страницы успешно получены.";
 
     startButton.textContent = "Анализ завершён";
+
   } catch (error) {
-    startButton.textContent = "Открой страницу заново";
+    result.textContent =
+      "Не удалось подключиться к странице.\n\n" +
+      "Попробуй обновить страницу и запустить анализ снова.";
+
+    startButton.textContent = "Повторить";
   }
 });
